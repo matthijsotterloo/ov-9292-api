@@ -19,8 +19,8 @@ OV9292API.journeysForTransportationTypes([.Bus, .Train, .Subway, .Tram, .Ferry],
 
 Contributors
 ----------
-[http://erikvanderplas.com/](Erik van der Plas)
-[https://matthijsotterloo.com](Matthijs Otterloo)
+[Erik van der Plas](http://erikvanderplas.com/)
+[Matthijs Otterloo](https://matthijsotterloo.com)
 
 
 License
