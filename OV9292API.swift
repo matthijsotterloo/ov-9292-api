@@ -1,3 +1,5 @@
+import Foundation
+
 public enum TransportationType {
     case Bus, Ferry, Subway, Tram, Train
     
@@ -134,10 +136,6 @@ class DateformatterManager {
     }
 }
 
-// Usage would be something like:
-DateformatterManager.dateFormatManager.dateFromString("2014-12-05T1649")
-
-
 extension Dictionary {
     mutating func update(other:Dictionary) {
         for (key,value) in other {
@@ -268,7 +266,7 @@ public class OV9292API:NSObject {
     
     public class func getJourney(transportationTypes:Array<TransportationType>, from:Station, to: Station, departure:NSDate)  -> AnyObject? {
         
-        var firstkeys = ["before":"1", "sequence":"1"]
+        let firstkeys = ["before":"1", "sequence":"1"]
         
         var keys = ["lang":"nl-NL", "from":from.locationID, "dateTime":DateformatterManager.dateFormatManager.stringFromDate(departure),"searchType":"departure", "interchangeTime":"standard", "after":"5", "to":to.locationID]
         let rkeys = transportationTypes.transportationDic()
