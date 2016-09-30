@@ -1,25 +1,25 @@
 import Foundation
 
 public enum TransportationType {
-    case Bus, Ferry, Subway, Tram, Train
+    case bus, ferry, subway, tram, train
     
     func parameter()->String {
         
         switch self {
-        case .Bus: return "byBus"
-        case .Ferry: return "byFerry"
-        case .Subway: return "bySubway"
-        case .Tram: return "byTram"
-        case .Train: return "byTrain"
+        case .bus: return "byBus"
+        case .ferry: return "byFerry"
+        case .subway: return "bySubway"
+        case .tram: return "byTram"
+        case .train: return "byTrain"
         }
     }
     
     public static func all() -> Array<TransportationType> {
-        return [.Bus, .Ferry, .Subway, .Tram, .Train]
+        return [.bus, .ferry, .subway, .tram, .train]
     }
 }
 
-public class Station:NSObject {
+open class Station:NSObject {
     var locationID:String = ""
     var stationType:String = ""
     var name:String = ""
@@ -29,10 +29,10 @@ public class Station:NSObject {
     var coordinates:LatLong = LatLong()
 }
 
-public class Journey:NSObject {
+open class Journey:NSObject {
     var ludMessages:Array<LudMessage> = []
-    var departure:NSDate?
-    var arrival:NSDate?
+    var departure:Date?
+    var arrival:Date?
     var numberOfChanges:Int = 0
     var legs:Array<JourneyLeg> = []
     var fareInfo:FareInfo = FareInfo()
@@ -44,7 +44,7 @@ struct FareInfo {
     var reducedPriceCents:Int = 0
 }
 
-public class JourneyLeg:NSObject {
+open class JourneyLeg:NSObject {
     var destination:String = ""
     var operatorName:String = ""
     var type:String = ""
@@ -52,10 +52,10 @@ public class JourneyLeg:NSObject {
     var stops:Array<Stop> = []
 }
 
-public class Stop:NSObject {
+open class Stop:NSObject {
     
-    var arrival:NSDate?
-    var departure:NSDate?
+    var arrival:Date?
+    var departure:Date?
     var platform:String = ""
     var station:Station?
 }
@@ -63,9 +63,9 @@ public class Stop:NSObject {
 struct LudMessage {
     var text:String = ""
     var urlString:String = ""
-    var url:NSURL? {
+    var url:URL? {
         get {
-            if let url = NSURL(string: urlString) {
+            if let url = URL(string: urlString) {
                 return url
             }
             
@@ -107,7 +107,7 @@ extension Array {
 }
 
 class DateformatterManager {
-    var formatter = NSDateFormatter()
+    var formatter = DateFormatter()
     
     class var dateFormatManager : DateformatterManager {
         struct Static {
@@ -128,27 +128,27 @@ class DateformatterManager {
     }
     
     // MARK: - Helpers
-    func stringFromDate(date: NSDate) -> String {
-        return self.formatter.stringFromDate(date)
+    func stringFromDate(_ date: Date) -> String {
+        return self.formatter.string(from: date as Date)
     }
-    func dateFromString(date: String) -> NSDate? {
-        return self.formatter.dateFromString(date)!
+    func dateFromString(_ date: String) -> Date? {
+        return self.formatter.date(from: date)! as Date?
     }
 }
 
 extension Dictionary {
-    mutating func update(other:Dictionary) {
+    mutating func update(_ other:Dictionary) {
         for (key,value) in other {
             self.updateValue(value, forKey:key)
         }
     }
 }
 
-public class OV9292API:NSObject {
+open class OV9292API:NSObject {
     
-    public static let baseURL = "http://api.9292.nl/0.1/"
+    open static let baseURL = "http://api.9292.nl/0.1/"
     
-    public class func journeysForTransportationTypes(transportationTypes:Array<TransportationType>, from:Station, to: Station, departure:NSDate)  -> Array<Journey> {
+    open class func journeysForTransportationTypes(_ transportationTypes:Array<TransportationType>, from:Station, to: Station, departure:Date)  -> Array<Journey> {
         
         let obj = OV9292API.getJourney(transportationTypes, from: from, to: to, departure: departure)
         
@@ -179,7 +179,7 @@ public class OV9292API:NSObject {
                                 journeyObject.ludMessages.append(ludMessage)
                             }
                         }
-                    
+                        
                         if let departure = rjourney["departure"] as? NSString {
                             journeyObject.departure = DateformatterManager.dateFormatManager2.dateFromString(departure as String)
                         }
@@ -254,17 +254,17 @@ public class OV9292API:NSObject {
                             journeyObject.legs = legs
                         }
                     }
-
+                    
                     journeys.append(journeyObject)
                 }
             }
         }
-    
+        
         
         return journeys
     }
     
-    public class func getJourney(transportationTypes:Array<TransportationType>, from:Station, to: Station, departure:NSDate)  -> AnyObject? {
+    open class func getJourney(_ transportationTypes:Array<TransportationType>, from:Station, to: Station, departure:Date)  -> AnyObject? {
         
         let firstkeys = ["before":"1", "sequence":"1"]
         
@@ -275,17 +275,17 @@ public class OV9292API:NSObject {
         keys.update(firstkeys)
         
         
-        let urlStr = OV9292API.baseURL.stringByAppendingString("journeys?\(OV9292API.paramterStringWithKeys(keys))")
+        let urlStr = OV9292API.baseURL.appendingFormat("journeys?\(OV9292API.paramterStringWithKeys(keys))")
         
-        if let url = NSURL(string: urlStr) {
+        if let url = URL(string: urlStr) {
             
             return performRequest(url, POSTparameters: [:])
         }
         
-        return [:]
+        return [[String:AnyObject]]() as AnyObject?
     }
     
-    public class func parseStation(stationjson:NSDictionary) -> Station {
+    open class func parseStation(_ stationjson:NSDictionary) -> Station {
         
         let station = Station()
         
@@ -326,7 +326,7 @@ public class OV9292API:NSObject {
         return station
     }
     
-    public class func stationsForQuery(query q:String) -> Array<Station> {
+    open class func stationsForQuery(query q:String) -> Array<Station> {
         
         let obj = OV9292API.JSONStationsForQuery(query: q)
         
@@ -346,19 +346,19 @@ public class OV9292API:NSObject {
         return stations
     }
     
-    public class func JSONStationsForQuery(query q:String) -> AnyObject? {
+    open class func JSONStationsForQuery(query q:String) -> AnyObject? {
         
-        let urlStr = OV9292API.baseURL.stringByAppendingString("locations?lang=nl-NL&q=\(q)")
+        let urlStr = OV9292API.baseURL + "locations?lang=nl-NL&q=\(q)"
         
-        if let url = NSURL(string: urlStr) {
+        if let url = URL(string: urlStr) {
             
             return performRequest(url, POSTparameters: [:])
         }
         
-        return [:]
+        return [[String:AnyObject]]() as AnyObject?
     }
     
-    public class func paramterStringWithKeys(keys:[String:String]) -> String {
+    open class func paramterStringWithKeys(_ keys:[String:String]) -> String {
         
         var isFirst = true
         
@@ -378,32 +378,32 @@ public class OV9292API:NSObject {
         return string
     }
     
-    public class func performRequest(url:NSURL, POSTparameters params:[String:String])  -> AnyObject? {
+    open class func performRequest(_ url:URL, POSTparameters params:[String:String])  -> AnyObject? {
         
-        let request = NSMutableURLRequest(URL: url)
+        let request = NSMutableURLRequest(url: url as URL)
         
         if params.keys.count > 0 {
-            request.HTTPMethod = "POST"
-            request.HTTPBody = OV9292API.paramterStringWithKeys(params).dataUsingEncoding(NSASCIIStringEncoding, allowLossyConversion: true)
+            request.httpMethod = "POST"
+            request.httpBody = OV9292API.paramterStringWithKeys(params).data(using: String.Encoding.ascii, allowLossyConversion: true)
         } else {
-            request.HTTPMethod = "GET"
+            request.httpMethod = "GET"
         }
         
-        let session = NSURLSession.sharedSession()
+        let session = URLSession.shared
         
         var finished = false
         var obj:AnyObject?
         
-        let task = session.dataTaskWithRequest(request) { data,response, error in
+        let task = session.dataTask(with: request as URLRequest) { data,response, error in
             
             if error == nil {
-                
+
                 do {
-                
                     
-                    print(NSString(data: data!, encoding: NSUTF8StringEncoding) as! String)
                     
-                    obj = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments)
+                    print(NSString(data: data!, encoding: String.Encoding.utf8.rawValue) as! String)
+                    
+                    obj = try JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions.allowFragments) as AnyObject
                     
                 } catch {}
             }
